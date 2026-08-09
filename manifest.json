@@ -2,6 +2,7 @@
   "name": "My App Hub",
   "short_name": "App Hub",
   "description": "Personal app hub: import, run and GitHub-sync your own HTML/CSS/JS projects.",
+  "id": "./index.html",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
