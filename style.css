@@ -1,0 +1,429 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+:root{
+  color-scheme: dark;
+  /* Material You dynamic-color tokens (violet/indigo seed) */
+  --md-primary:#c6bfff;
+  --md-on-primary:#2f1e75;
+  --md-primary-container:#463a92;
+  --md-on-primary-container:#e6dfff;
+
+  --md-secondary:#c8c2db;
+  --md-secondary-container:#443f57;
+
+  --md-bg:#131017;
+  --md-surface:#141218;
+  --md-surface-1:#1c1a22;
+  --md-surface-2:#211f29;
+  --md-surface-3:#27242f;
+  --md-surface-container-high:#2c2937;
+  --md-outline:#948f9c;
+  --md-outline-variant:#48454e;
+  --md-on-surface:#e7e0eb;
+  --md-on-surface-variant:#cac4cf;
+
+  --md-error:#ffb4ab;
+  --md-success:#8ef6c6;
+
+  --accent-coral:#ffb4a0;
+  --accent-periwinkle:#b9c6ff;
+  --accent-amber:#ffe082;
+  --accent-mint:#8ef6c6;
+
+  --radius-xs:8px;
+  --radius-sm:14px;
+  --radius-md:20px;
+  --radius-lg:28px;
+  --radius-full:999px;
+
+  --shadow-1: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.5);
+  --shadow-2: 0 3px 8px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4);
+
+  --nav-h:64px;
+  --topbar-h:118px;
+  --app-max:560px;
+  --app-half:280px; /* half of --app-max, used to anchor fixed elements to the column edge */
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:'Roboto',system-ui,-apple-system,sans-serif;
+  background:var(--md-bg);
+  color:var(--md-on-surface);
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+  text-size-adjust:100%;
+  -webkit-text-size-adjust:100%;
+}
+#app{
+  max-width:var(--app-max);
+  margin:0 auto;
+  height:100dvh;
+  position:relative;
+  background:var(--md-bg);
+  display:flex;
+  flex-direction:column;
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  overflow:hidden; /* view-root + nav manage their own scrolling; #app itself never scrolls */
+}
+.icon{width:22px;height:22px;flex-shrink:0;}
+
+/* #view-root is re-filled with topbar+main on every render() call. It must be
+   a flex column so main's flex:1 has an actual container to grow into -
+   without this, main just sizes to its content and the bottom-nav (previously
+   relying on sticky) ends up floating right under short content instead of
+   pinned to the true bottom of the screen. */
+#view-root{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-height:0; /* allow this flex item to shrink so its child can scroll instead of overflowing */
+}
+
+/* Reduced motion: honour OS-level preference (also helps battery/heating) */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* Keyboard / screen-reader focus visibility (mouse/touch clicks stay clean) */
+:focus{outline:none;}
+:focus-visible{
+  outline:2.5px solid var(--md-primary);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* ---------- Top app bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  background:linear-gradient(180deg, var(--md-bg) 82%, transparent);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  padding:calc(14px + env(safe-area-inset-top)) 16px 6px;
+}
+.topbar-row{display:flex; align-items:center; gap:10px;}
+.brand{
+  font-size:clamp(19px, 5.5vw, 24px); font-weight:700; letter-spacing:.1px;
+  background:linear-gradient(90deg,var(--accent-periwinkle),var(--accent-coral));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.spacer{flex:1;}
+.icon-btn{
+  width:48px;height:48px;border-radius:var(--radius-full);
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--md-on-surface);
+  cursor:pointer; transition:background .15s;
+  position:relative; overflow:hidden;
+}
+.icon-btn:active{background:var(--md-surface-2);}
+.search-pill{
+  margin-top:12px;
+  display:flex;align-items:center;gap:10px;
+  background:var(--md-surface-2);
+  border-radius:var(--radius-full);
+  padding:11px 16px;
+  color:var(--md-outline);
+}
+.search-pill input{
+  border:none;background:transparent;outline:none;
+  color:var(--md-on-surface); font-size:15px; width:100%; font-family:inherit;
+}
+.tabs{
+  display:flex; gap:22px; margin-top:14px; padding-bottom:10px;
+  border-bottom:1px solid var(--md-outline-variant);
+  overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  font-size:14px; font-weight:600; color:var(--md-outline);
+  padding-bottom:12px; margin-bottom:-11px; white-space:nowrap;
+  border-bottom:3px solid transparent; cursor:pointer;
+}
+.tab.active{color:var(--md-primary); border-bottom-color:var(--md-primary);}
+
+/* ---------- Main scroll area ---------- */
+main{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 16px calc(94px + env(safe-area-inset-bottom));}
+.section-title{
+  font-size:15px; font-weight:700; margin:20px 2px 12px; color:var(--md-on-surface);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.section-title small{font-size:12px; font-weight:500; color:var(--md-primary);}
+
+/* App grid + cards */
+.app-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:14px;
+}
+.app-card{
+  background:var(--md-surface-1);
+  border-radius:var(--radius-md);
+  padding:14px 12px 12px;
+  display:flex; flex-direction:column; gap:8px;
+  cursor:pointer; transition:transform .15s, background .15s;
+  border:1px solid transparent;
+  position:relative; overflow:hidden; /* contains the tap ripple to this card */
+  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+}
+.app-card:active{transform:scale(.97); background:var(--md-surface-2);}
+.app-icon{
+  width:52px;height:52px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:20px;color:#fff;
+  box-shadow:var(--shadow-1);
+}
+.app-name{font-size:13.5px; font-weight:600; line-height:1.25; word-break:break-word;}
+.app-meta{font-size:11.5px; color:var(--md-outline); display:flex; align-items:center; gap:4px;}
+
+/* List row (Files / GitHub log) */
+.list-row{
+  display:flex; align-items:center; gap:14px;
+  background:var(--md-surface-1); border-radius:var(--radius-md);
+  padding:13px 14px; margin-bottom:10px; cursor:pointer;
+  position:relative; overflow:hidden; /* contains the tap ripple to this row */
+  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+}
+.list-row .icon-wrap{
+  width:40px;height:40px;border-radius:var(--radius-sm);
+  background:var(--md-surface-3); display:flex;align-items:center;justify-content:center;
+  color:var(--md-primary); flex-shrink:0;
+}
+.list-row .txt{flex:1; min-width:0;}
+.list-row .title{font-size:14.5px; font-weight:600;}
+.list-row .sub{font-size:12px; color:var(--md-outline); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.list-row .chev{color:var(--md-outline); flex-shrink:0;}
+.list-row .open-btn{
+  flex-shrink:0; border:none; cursor:pointer; font-family:inherit;
+  background:var(--md-secondary-container); color:var(--md-primary);
+  font-size:12.5px; font-weight:700; padding:7px 16px; border-radius:var(--radius-full);
+  position:relative; overflow:hidden; /* contains its own tap ripple */
+}
+.list-row .open-btn:active{filter:brightness(.9);}
+
+.empty-state{
+  text-align:center; padding:64px 20px 20px; color:var(--md-outline);
+}
+.empty-state .icon{width:52px;height:52px; margin-bottom:14px; opacity:.6;}
+.empty-state h3{color:var(--md-on-surface); font-size:16px; margin:0 0 6px;}
+.empty-state p{font-size:13.5px; line-height:1.5; margin:0;}
+
+/* ---------- Bottom nav ---------- */
+.bottom-nav{
+  flex-shrink:0; position:relative; z-index:30;
+  height:var(--nav-h);
+  background:var(--md-surface-2);
+  display:flex; align-items:center; justify-content:space-around;
+  border-top:1px solid var(--md-outline-variant);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  color:var(--md-outline); font-size:11px; font-weight:600;
+  background:none; border:none; padding:6px 14px; border-radius:var(--radius-md);
+  cursor:pointer;
+  position:relative; overflow:hidden; /* contains the tap ripple so it doesn't escape into the bottom-nav bar and appear to "lift" off in the wrong spot */
+}
+.nav-item.active{color:var(--md-primary);}
+.nav-item .icon{width:22px;height:22px;}
+
+/* ---------- FAB ---------- */
+.fab{
+  position:fixed;
+  /* Anchors to the right edge of the centered app column (--app-half from
+     center), clamped so it never drifts past the viewport's own right edge
+     with a 20px margin on narrow phones. Fixes misalignment on tablets/
+     foldables/landscape where the viewport is wider than the app column. */
+  left:min(calc(50% + var(--app-half) - 78px), calc(100vw - 78px));
+  bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom));
+  width:58px; height:58px; border-radius:var(--radius-md);
+  background:var(--md-primary-container); color:var(--md-on-primary-container);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-2); border:none; cursor:pointer; z-index:25;
+  overflow:hidden; /* clips the ripple */
+}
+.fab .icon{width:26px;height:26px;}
+
+/* ---------- Bottom sheet / modal ---------- */
+.scrim{
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.scrim.show{opacity:1; pointer-events:auto;}
+.sheet{
+  position:fixed; left:50%; bottom:0; transform:translate(-50%,100%);
+  width:100%; max-width:560px;
+  background:var(--md-surface-container-high);
+  border-radius:24px 24px 0 0;
+  padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+  z-index:51; transition:transform .25s cubic-bezier(.2,.8,.2,1);
+  max-height:86vh; overflow-y:auto;
+}
+.sheet.show{transform:translate(-50%,0);}
+.sheet .grabber{
+  width:36px;height:4px;border-radius:99px;background:var(--md-outline-variant);
+  margin:6px auto 16px;
+}
+.sheet h3{margin:0 0 4px; font-size:18px;}
+.sheet p.hint{color:var(--md-outline); font-size:13px; margin:0 0 18px;}
+
+.option-row{
+  display:flex; align-items:center; gap:14px; padding:14px 4px;
+  cursor:pointer; border-radius:var(--radius-md);
+  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+}
+.option-row:active{background:var(--md-surface-3);}
+.option-row{position:relative; overflow:hidden;} /* contains the tap ripple to this row */
+.option-row .icon-wrap{
+  width:44px;height:44px;border-radius:var(--radius-sm);
+  background:var(--md-primary-container); color:var(--md-on-primary-container);
+  display:flex;align-items:center;justify-content:center;
+}
+.option-row .title{font-size:15px; font-weight:600;}
+.option-row .sub{font-size:12.5px; color:var(--md-outline); margin-top:2px;}
+
+/* form fields inside sheets */
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:12.5px; font-weight:600; color:var(--md-on-surface-variant); margin-bottom:6px;}
+.field input, .field select{
+  width:100%; background:var(--md-surface-2); border:1px solid var(--md-outline-variant);
+  border-radius:var(--radius-sm); padding:12px 14px; color:var(--md-on-surface);
+  font-size:14.5px; outline:none; font-family:inherit;
+}
+.field input:focus, .field select:focus{border-color:var(--md-primary);}
+.field .row2{display:flex; gap:10px;}
+.field .row2 > *{flex:1;}
+.hidden-input{display:none;}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 20px; border-radius:var(--radius-full); border:none;
+  font-size:14.5px; font-weight:700; cursor:pointer; width:100%;
+  font-family:inherit;
+  position:relative; overflow:hidden; /* contains the tap ripple to the button */
+}
+.btn.primary{background:var(--md-primary); color:var(--md-on-primary);}
+.btn.tonal{background:var(--md-secondary-container); color:var(--md-on-surface);}
+.btn.text{background:transparent; color:var(--md-primary);}
+.btn:active{filter:brightness(.9);}
+.btn:disabled{opacity:.45; pointer-events:none;}
+.btn.loading{color:transparent; position:relative; pointer-events:none;}
+.btn.loading::after{
+  content:""; position:absolute; width:18px; height:18px; border-radius:50%;
+  border:2.5px solid currentColor; border-top-color:transparent; color:var(--md-on-primary);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.switch-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 2px; border-bottom:1px solid var(--md-outline-variant);
+}
+.switch-row:last-child{border-bottom:none;}
+.switch-row .title{font-size:14.5px; font-weight:600;}
+.switch-row .sub{font-size:12px; color:var(--md-outline); margin-top:2px;}
+.switch-row button{
+  background:none;border:none;color:var(--md-primary);cursor:pointer;
+  padding:0; min-width:48px; min-height:48px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:var(--radius-full); flex-shrink:0;
+  margin:-13px -13px -13px 0; /* expand hit area without shifting layout */
+}
+.switch-row button:active{background:var(--md-surface-3);}
+
+/* ---------- Full screen overlays (runner / file viewer) ---------- */
+.overlay{
+  position:fixed; top:0; bottom:0; left:50%; width:100%; max-width:var(--app-max);
+  transform:translate(-50%,100%);
+  background:var(--md-bg); z-index:60;
+  display:flex; flex-direction:column;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 0 40px rgba(0,0,0,.5);
+}
+.overlay.show{transform:translate(-50%,0);}
+.overlay-bar{
+  display:flex; align-items:center; gap:10px; padding:12px 10px;
+  padding-top:calc(12px + env(safe-area-inset-top));
+  background:var(--md-surface-1); border-bottom:1px solid var(--md-outline-variant);
+  flex-shrink:0;
+}
+.overlay-bar .title{font-size:15px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.overlay-body{flex:1; min-height:0; position:relative;}
+.overlay-body iframe{width:100%; height:100%; border:none; background:#fff;}
+#pdf-canvas-wrap{height:100%; overflow-y:auto; background:#38343f; padding:14px 0;}
+#pdf-canvas-wrap canvas{display:block; margin:0 auto 14px; box-shadow:var(--shadow-2); max-width:96%; height:auto;}
+.code-view{
+  height:100%; overflow:auto; margin:0; padding:16px;
+  font-family:'Roboto Mono', monospace; font-size:12.5px; line-height:1.6;
+  background:var(--md-surface); color:var(--md-on-surface); white-space:pre;
+}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed; left:50%; bottom:calc(var(--nav-h) + 16px); transform:translate(-50%,20px);
+  background:var(--md-surface-container-high); color:var(--md-on-surface);
+  padding:13px 20px; border-radius:var(--radius-sm); font-size:13.5px; font-weight:500;
+  box-shadow:var(--shadow-2); z-index:80; opacity:0; transition:all .25s; max-width:88%;
+  display:flex; align-items:center; gap:10px; pointer-events:none;
+}
+.toast.show{opacity:1; transform:translate(-50%,0);}
+.toast.error{color:var(--md-error);}
+.toast.success{color:var(--md-success);}
+
+/* progress */
+.progress-bar{height:4px; border-radius:99px; background:var(--md-surface-3); overflow:hidden; margin-top:10px;}
+.progress-bar > div{height:100%; background:var(--md-primary); width:0%; transition:width .2s;}
+
+/* badge */
+.badge{
+  font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:99px;
+  background:var(--md-secondary-container); color:var(--md-on-surface); white-space:nowrap;
+}
+
+/* GitHub view */
+.gh-card{background:var(--md-surface-1); border-radius:var(--radius-md); padding:18px; margin-bottom:16px;}
+.gh-status{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
+.gh-status .dot{width:10px;height:10px;border-radius:50%; background:var(--md-outline);}
+.gh-status .dot.on{background:var(--md-success);}
+.gh-status .txt{font-size:14px; font-weight:600;}
+.gh-status .sub2{font-size:12px; color:var(--md-outline);}
+
+.ripple{
+  position:absolute; border-radius:50%; pointer-events:none;
+  background:currentColor; opacity:.28; transform:scale(0);
+  animation:ripple-out .45s ease-out forwards;
+  mix-blend-mode:overlay;
+}
+@keyframes ripple-out{ to{ transform:scale(1); opacity:0; } }
+
+::-webkit-scrollbar{width:6px; height:6px;}
+::-webkit-scrollbar-thumb{background:var(--md-outline-variant); border-radius:99px;}
+
+@media (max-width:360px){
+  .app-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+}
+
+/* Short/landscape viewports (phone rotated): reclaim vertical space so the
+   on-screen keyboard never covers an active input inside a sheet, and the
+   bottom nav doesn't eat a big chunk of a shallow screen. */
+@media (max-height:420px) and (orientation:landscape){
+  :root{ --nav-h:52px; }
+  .nav-item{ flex-direction:row; gap:6px; padding:6px 12px; }
+  .nav-item .icon{width:18px;height:18px;}
+  .topbar{ padding-top:calc(8px + env(safe-area-inset-top)); }
+  .search-pill{ margin-top:8px; padding:8px 14px; }
+  .sheet{ max-height:94vh; }
+}
+
+/* Tablet / foldable-unfolded: wider column, roomier grid, larger tap targets
+   read comfortably at arm's length instead of stretching phone-sized UI. */
+@media (min-width:720px){
+  :root{ --app-max:680px; --app-half:340px; }
+  .app-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));}
+}

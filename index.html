@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>My App Hub</title>
+<meta name="theme-color" content="#141218">
+<meta name="description" content="A personal, no-login app hub for running your own HTML/CSS/JS projects with GitHub sync.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <div id="view-root"></div>
+
+  <button class="fab" id="fab" aria-label="Import an app"></button>
+
+  <nav class="bottom-nav" aria-label="Primary">
+    <button class="nav-item active" data-view="home"><span id="nav-home"></span>Home</button>
+    <button class="nav-item" data-view="apps"><span id="nav-apps"></span>Apps</button>
+    <button class="nav-item" data-view="files"><span id="nav-files"></span>Files</button>
+    <button class="nav-item" data-view="github"><span id="nav-github"></span>GitHub</button>
+    <button class="nav-item" data-view="settings"><span id="nav-settings"></span>More</button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Runner overlay: executes the bundled HTML/CSS/JS app -->
+  <div class="overlay" id="overlay-runner" role="dialog" aria-modal="true" aria-label="App runner">
+    <div class="overlay-bar">
+      <button class="icon-btn" id="runner-close" aria-label="Close app"></button>
+      <div class="title" id="runner-title">App</div>
+      <button class="icon-btn" id="runner-reload" aria-label="Reload app"></button>
+    </div>
+    <div class="overlay-body">
+      <iframe id="runner-frame" title="Running app" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allow="camera; microphone; geolocation; clipboard-write"></iframe>
+    </div>
+  </div>
+
+  <!-- File viewer overlay: code / image / PDF preview -->
+  <div class="overlay" id="overlay-viewer" role="dialog" aria-modal="true" aria-label="File viewer">
+    <div class="overlay-bar">
+      <button class="icon-btn" id="viewer-close" aria-label="Close file"></button>
+      <div class="title" id="viewer-title">File</div>
+      <div style="width:48px;" aria-hidden="true"></div>
+    </div>
+    <div class="overlay-body" id="viewer-body"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/db.js"></script>
+<script src="js/importer.js"></script>
+<script src="js/github.js"></script>
+<script src="js/pdf-viewer.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.getElementById("fab").innerHTML = icon("add");
+  document.getElementById("nav-home").outerHTML = icon("home");
+  document.getElementById("nav-apps").outerHTML = icon("apps");
+  document.getElementById("nav-files").outerHTML = icon("folder");
+  document.getElementById("nav-github").outerHTML = icon("github");
+  document.getElementById("nav-settings").outerHTML = icon("settings");
+  document.getElementById("runner-close").innerHTML = icon("back");
+  document.getElementById("runner-reload").innerHTML = icon("refresh");
+  document.getElementById("viewer-close").innerHTML = icon("back");
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
+    });
+  }
+</script>
+</body>
+</html>
